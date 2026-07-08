@@ -15,6 +15,8 @@ const DEFAULTS = {
   name_color: '',            // '' = цвет чата Twitch
   message_bg: 'rgba(0,0,0,0.55)',
   message_bg_image: '',          // URL картинки фона сообщения
+  emote_size: 28,            // высота эмотов (px)
+  hide_commands: false,      // скрывать сообщения начинающиеся с «!»
 
   // ── Никнейм на изображении ──
   author_position:  'top-left',  // 9-позиций: top/middle/bottom + left/center/right
@@ -174,6 +176,7 @@ function applyVars() {
   root.setProperty('--long-msg-max-height',  `${cfg.long_msg_max_height || 80}px`);
   root.setProperty('--name-size',            `${Math.max(10, cfg.font_size - 2)}px`);
   root.setProperty('--max-width',             cfg.max_width);
+  root.setProperty('--emote-size',           `${cfg.emote_size || 28}px`);
 
   // ── Фоновое изображение сообщений ──
   applyMessageBgImage();
@@ -258,39 +261,81 @@ function escapeAttr(str) {
   return String(str).replace(/"/g, '&quot;').replace(/'/g, '&#39;');
 }
 
-/* ---- Разбор текста (эмодзи SE) ---- */
+/* ---- Разбор текста: эмоты Twitch / BTTV / FFZ ---- */
+/**
+ * Строит безопасный HTML сообщения с эмотами.
+ *
+ * SE передаёт emotes[].urls как объект { "1": url, "2": url, "4": url }.
+ * Старые версии SE могут передавать e.url или e.gif — они тоже поддержаны.
+ *
+ * Алгоритм: сортируем по возрастанию start, идём посегментно —
+ * каждый текстовый участок между эмотами экранируется отдельно.
+ * Это гарантирует XSS-безопасность даже при наличии эмотов.
+ *
+ * Индексы start/end — JS-строковые (UTF-16 code units), как и в SE.
+ */
 function buildMessageHtml(msgObj) {
   if (!msgObj) return '';
 
-  // SE передаёт renderedText или text + emotes
-  if (msgObj.renderedText) {
-    return msgObj.renderedText;
-  }
-
-  let text = escapeHtml(msgObj.text || '');
-
-  // Заменяем emotes, если есть
+  const raw    = msgObj.text || '';
   const emotes = msgObj.emotes || [];
-  // Сортируем по убыванию позиции, чтобы не сбивать индексы
-  const sorted = [...emotes].sort((a, b) => b.start - a.start);
-  const raw = msgObj.text || '';
 
-  if (sorted.length) {
-    let chars = [...raw];
-    sorted.forEach(e => {
-      const img = `<img class="emote" src="${escapeAttr(e.url || e.gif || '')}" alt="${escapeAttr(e.name || '')}" />`;
-      chars.splice(e.start, e.end - e.start + 1, img);
-    });
-    text = chars.join('');
+  // Нет эмотов — просто экранируем и возвращаем
+  if (!emotes.length) return escapeHtml(raw);
+
+  // Сортируем по ВОЗРАСТАНИЮ start для последовательного обхода
+  const sorted = [...emotes].sort((a, b) => a.start - b.start);
+
+  let result = '';
+  let cursor = 0;
+
+  for (const e of sorted) {
+    const start = Number(e.start);
+    // Ограничиваем end длиной строки (защита от кривых данных)
+    const end   = Math.min(Number(e.end), raw.length - 1);
+
+    // Пропускаем перекрывающиеся или некорректные эмоты
+    if (start < cursor || start > end || start >= raw.length) continue;
+
+    // Экранируем текст ДО эмота
+    result += escapeHtml(raw.slice(cursor, start));
+
+    // URL: новый формат SE — urls["1"] / ["2"] / ["4"]; старый — e.url / e.gif
+    const url =
+      (e.urls && (e.urls['1'] || e.urls['2'] || e.urls['4'])) ||
+      e.url || e.gif || '';
+
+    if (url) {
+      result +=
+        `<img class="emote" ` +
+        `src="${escapeAttr(url)}" ` +
+        `alt="${escapeAttr(e.name || '')}" ` +
+        `title="${escapeAttr(e.name || '')}" ` +
+        `loading="lazy" ` +
+        `onerror="this.style.display='none'" />`;
+    } else {
+      // URL неизвестен — показываем текст эмота как есть
+      result += escapeHtml(raw.slice(start, end + 1));
+    }
+
+    cursor = end + 1;
   }
 
-  return text;
+  // Остаток строки после последнего эмота
+  result += escapeHtml(raw.slice(cursor));
+
+  return result;
 }
 
 /* ---- Создание элемента сообщения ---- */
 function createMessageEl(data) {
   const li = document.createElement('li');
   li.className = 'chat-message';
+
+  // Атрибуты для модерации: delete-message / delete-messages
+  if (data.msgId)  li.dataset.msgId  = data.msgId;
+  if (data.userId) li.dataset.userId = data.userId;
+
 
   const authorColor = cfg.name_color
     || (data.displayColor || data.color || '#e879f9');
@@ -447,8 +492,8 @@ window.addEventListener('onEventReceived', e => {
     const d = event.data;
     if (!d) return;
 
-    // Фильтр команд (опционально)
-    if ((d.text || '').startsWith('!')) return;
+    // Фильтр команд — только если включён в настройках
+    if (cfg.hide_commands && (d.text || '').startsWith('!')) return;
 
     addMessage(d);
 
@@ -469,7 +514,10 @@ window.addEventListener('onEventReceived', e => {
   } else if (listener === 'event:test') {
     /* ---- Тестовые события из SE ---- */
     if (event && event.listener === 'message') {
-      addMessage(event.event.data);
+      const td = event.event && event.event.data;
+      if (!td) return;
+      if (cfg.hide_commands && (td.text || '').startsWith('!')) return;
+      addMessage(td);
     }
   }
 });
@@ -478,16 +526,60 @@ window.addEventListener('onEventReceived', e => {
 if (typeof window.StreamElements === 'undefined') {
   setTimeout(() => {
     const testMessages = [
-      { displayName: 'StreamerFan', color: '#ff6b6b', text: 'Привет! Это тест виджета чата 👋', badges: [] },
-      { displayName: 'Viewer42', color: '#4ecdc4', text: 'Очень длинное сообщение для проверки автоматической прокрутки текста — Lorem ipsum dolor sit amet, consectetur adipiscing elit. Pellentesque habitant morbi tristique senectus et netus et malesuada fames ac turpis egestas.', badges: [] },
-      { displayName: 'ModeratorX', color: '#ffe66d', text: 'Стрим огонь! 🔥🔥🔥', badges: [{ url: 'https://static-cdn.jtvnw.net/badges/v1/3267646d-33f0-4b17-b3df-f923a41db1d6/1', description: 'Moderator' }] },
-      { displayName: 'SubUser99', color: '#a8e6cf', text: 'Всем привет из Москвы! Отличный виджет!', badges: [] },
+      {
+        displayName: 'StreamerFan', displayColor: '#ff6b6b',
+        text: 'Привет! Это тест виджета чата 👋',
+        emotes: [], badges: [],
+      },
+      {
+        displayName: 'KappaUser', displayColor: '#ff9f43',
+        text: 'Kappa это было круто BibleThump',
+        badges: [],
+        emotes: [
+          { type: 'twitch', name: 'Kappa',      id: '25', start: 0,  end: 4,
+            urls: { '1': 'https://static-cdn.jtvnw.net/emoticons/v2/25/default/dark/1.0' } },
+          { type: 'twitch', name: 'BibleThump', id: '86', start: 22, end: 31,
+            urls: { '1': 'https://static-cdn.jtvnw.net/emoticons/v2/86/default/dark/1.0' } },
+        ],
+      },
+      {
+        displayName: 'Viewer42', displayColor: '#4ecdc4',
+        text: 'Очень длинное сообщение для проверки автоматической прокрутки текста — Lorem ipsum dolor sit amet, consectetur adipiscing elit. Pellentesque habitant morbi tristique senectus.',
+        emotes: [], badges: [],
+      },
+      {
+        displayName: 'ModeratorX', displayColor: '#ffe66d',
+        text: 'PogChamp PogChamp стрим огонь!',
+        badges: [{ url: 'https://static-cdn.jtvnw.net/badges/v1/3267646d-33f0-4b17-b3df-f923a41db1d6/1', description: 'Moderator' }],
+        emotes: [
+          { type: 'twitch', name: 'PogChamp', id: '305954156', start: 0,  end: 7,
+            urls: { '1': 'https://static-cdn.jtvnw.net/emoticons/v2/305954156/default/dark/1.0' } },
+          { type: 'twitch', name: 'PogChamp', id: '305954156', start: 9,  end: 16,
+            urls: { '1': 'https://static-cdn.jtvnw.net/emoticons/v2/305954156/default/dark/1.0' } },
+        ],
+      },
+      {
+        displayName: 'BTTVuser', displayColor: '#a8e6cf',
+        text: 'monkaS когда дедлайн завтра OMEGALUL',
+        emotes: [
+          { type: 'bttv', name: 'monkaS',   id: '56e9f494fff3cc5c35e5287e', start: 0,  end: 5,
+            urls: { '1': 'https://cdn.betterttv.net/emote/56e9f494fff3cc5c35e5287e/1x' } },
+          { type: 'bttv', name: 'OMEGALUL', id: '583089f4737a8e61abb0186b',  start: 28, end: 35,
+            urls: { '1': 'https://cdn.betterttv.net/emote/583089f4737a8e61abb0186b/1x' } },
+        ],
+        badges: [],
+      },
+      {
+        displayName: '!CommandUser', displayColor: '#c0c0c0',
+        text: '!команда (это сообщение скрыто если включён hide_commands)',
+        emotes: [], badges: [],
+      },
     ];
     let i = 0;
     const send = () => {
       if (i < testMessages.length) {
         addMessage(testMessages[i++]);
-        setTimeout(send, 1200);
+        setTimeout(send, 1400);
       }
     };
     send();

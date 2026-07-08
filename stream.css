@@ -259,11 +259,13 @@ body {
   display: inline;
 }
 
-/* Эмодзи / emotes */
+/* Эмодзи / emotes — Twitch, BTTV, FFZ */
 .chat-text img.emote {
-  height: 1.6em;
+  height: var(--emote-size, 28px);
+  width: auto;
   vertical-align: middle;
   margin: 0 1px;
+  image-rendering: auto;
 }
 
 /* ===== Длинные сообщения: режимы прокрутки =====
