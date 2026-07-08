@@ -1,0 +1,340 @@
+/* ===== Общий сброс ===== */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  background: transparent;
+  overflow: hidden;
+  font-family: var(--font-family, 'Roboto', sans-serif);
+  font-size: var(--font-size, 15px);
+}
+
+/* ===== Обёртка виджета ===== */
+#widget-wrap {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  height: 100vh;
+  gap: 0;
+}
+
+/* ===== Баннеры (верхний / нижний) ===== */
+.banner {
+  flex-shrink: 0;
+  width: 100%;
+  overflow: hidden;
+  display: none; /* скрыт, пока не задан URL */
+  line-height: 0;
+}
+
+.banner.visible {
+  display: block;
+}
+
+.banner-top {
+  border-radius: var(--banner-radius, 6px) var(--banner-radius, 6px) 0 0;
+}
+
+.banner-bottom {
+  border-radius: 0 0 var(--banner-radius, 6px) var(--banner-radius, 6px);
+}
+
+.banner img {
+  width: 100%;
+  height: var(--banner-height, 80px);
+  object-fit: cover;
+  object-position: center;
+  display: block;
+}
+
+/* ===== Область сообщений ===== */
+#chat-container {
+  flex: 1 1 auto;
+  overflow: hidden;          /* скроллим только внутри */
+  position: relative;
+  min-height: 0;
+}
+
+#chat-list {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;  /* новые снизу */
+  gap: var(--message-gap, 6px);
+  padding: var(--list-padding, 8px);
+  min-height: 100%;
+  overflow-y: auto;
+  overflow-x: hidden;
+  height: 100%;
+  scrollbar-width: none;
+}
+
+#chat-list::-webkit-scrollbar {
+  display: none;
+}
+
+/* ===== Одно сообщение ===== */
+.chat-message {
+  display: flex;
+  align-items: flex-start;
+  gap: 6px;
+  word-break: break-word;
+  max-width: 100%;
+  opacity: 0;
+  transform: translateY(6px);
+  animation: var(--msg-anim, msgSlideUp) var(--msg-anim-speed, 0.25s) ease forwards;
+  border-radius: var(--message-radius, 8px);
+  padding: var(--message-padding, 6px 10px);
+  overflow: hidden;
+  position: relative;
+  background-color: var(--message-bg, rgba(0, 0, 0, 0.55));
+}
+
+/* ── Режим фонового изображения ──
+   Padding снимается — текст идёт в .msg-overlay поверх картинки.
+   background-color убирается — фон создаёт само изображение. */
+.chat-message.has-bg-image {
+  display: block;          /* блочный, чтобы <img> занял всю ширину */
+  padding: 0;
+  background-color: transparent;
+}
+
+/* Само изображение:
+   width: 100%  — растягивается по ширине пузыря
+   height: auto — высота по соотношению сторон (без деформации)
+   object-fit: contain — никогда не обрезает, не деформирует */
+.msg-bg-img {
+  display: block;
+  width: 100%;
+  height: auto;
+  object-fit: contain;
+  border-radius: inherit;
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   СИСТЕМА ПОЗИЦИОНИРОВАНИЯ НА ИЗОБРАЖЕНИИ
+   ───────────────────────────────────────────────────────────────
+   Класс .pos-* задаёт CSS-переменные --base-x, --base-y, --align-t
+   для конкретного элемента. Каждый оверлей (автор / текст) считывает
+   их независимо и добавляет свой пиксельный сдвиг.
+   ═══════════════════════════════════════════════════════════════ */
+
+/* Базовые координаты (% от контейнера) + трансформ выравнивания */
+.pos-top-left      { --base-x: 0%;   --base-y: 0%;   --align-t: none; }
+.pos-top-center    { --base-x: 50%;  --base-y: 0%;   --align-t: translateX(-50%); }
+.pos-top-right     { --base-x: 100%; --base-y: 0%;   --align-t: translateX(-100%); }
+.pos-middle-left   { --base-x: 0%;   --base-y: 50%;  --align-t: translateY(-50%); }
+.pos-middle-center { --base-x: 50%;  --base-y: 50%;  --align-t: translate(-50%, -50%); }
+.pos-middle-right  { --base-x: 100%; --base-y: 50%;  --align-t: translate(-100%, -50%); }
+.pos-bottom-left   { --base-x: 0%;   --base-y: 100%; --align-t: translateY(-100%); }
+.pos-bottom-center { --base-x: 50%;  --base-y: 100%; --align-t: translate(-50%, -100%); }
+.pos-bottom-right  { --base-x: 100%; --base-y: 100%; --align-t: translate(-100%, -100%); }
+
+/* ── Оверлей: НИКНЕЙМ ── */
+.msg-author-overlay {
+  position: absolute;
+  /* top/left = базовая %-позиция + пиксельный сдвиг (из inline style) */
+  top:  calc(var(--base-y, 0%)   + var(--a-off-y, 0px));
+  left: calc(var(--base-x, 0%)   + var(--a-off-x, 0px));
+  transform: var(--align-t, none);
+  max-width: calc(100% - 16px);
+  z-index: 2;
+  pointer-events: none;
+}
+
+/* ── Оверлей: ТЕКСТ СООБЩЕНИЯ ── */
+.msg-text-overlay {
+  position: absolute;
+  top:  calc(var(--base-y, 100%) + var(--t-off-y, 0px));
+  left: calc(var(--base-x, 0%)   + var(--t-off-x, 0px));
+  transform: var(--align-t, none);
+  max-width: calc(100% - 16px);
+  z-index: 2;
+  pointer-events: none;
+}
+
+/* ── Необязательная подложка («таблетка») под каждым блоком ── */
+.msg-overlay-pill {
+  display: inline-block;
+  border-radius: var(--overlay-radius, 6px);
+  padding: 2px 7px;
+  word-break: break-word;
+  pointer-events: auto;
+  /* background задаётся через inline style из JS */
+}
+
+/* ── Тень текста для читаемости без подложки ── */
+.chat-message.has-bg-image .chat-author,
+.chat-message.has-bg-image .chat-text,
+.chat-message.has-bg-image .chat-text img.emote {
+  text-shadow:
+    0 1px 4px rgba(0, 0, 0, 0.9),
+    0 0  10px rgba(0, 0, 0, 0.65);
+  filter: drop-shadow(0 1px 3px rgba(0,0,0,0.8));
+}
+
+/* ── Снизу вверх (по умолчанию) ── */
+@keyframes msgSlideUp {
+  from { opacity: 0; transform: translateY(10px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+/* ── Плавное появление ── */
+@keyframes msgFade {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+/* ── Справа налево ── */
+@keyframes msgSlideRight {
+  from { opacity: 0; transform: translateX(40px); }
+  to   { opacity: 1; transform: translateX(0); }
+}
+/* ── Слева направо ── */
+@keyframes msgSlideLeft {
+  from { opacity: 0; transform: translateX(-40px); }
+  to   { opacity: 1; transform: translateX(0); }
+}
+/* ── Масштабирование из центра ── */
+@keyframes msgPop {
+  from { opacity: 0; transform: scale(0.75); }
+  to   { opacity: 1; transform: scale(1); }
+}
+/* ── Без анимации ── */
+@keyframes msgInstant {
+  from { opacity: 1; transform: none; }
+  to   { opacity: 1; transform: none; }
+}
+
+/* Аватар */
+.chat-avatar {
+  width: var(--avatar-size, 28px);
+  height: var(--avatar-size, 28px);
+  border-radius: 50%;
+  flex-shrink: 0;
+  object-fit: cover;
+  align-self: flex-start;
+  margin-top: 1px;
+  display: none; /* управляется JS при включённом поле show_avatars */
+}
+
+.show-avatars .chat-avatar {
+  display: block;
+}
+
+/* Контент: ник + текст */
+.chat-content {
+  flex: 1;
+  min-width: 0;
+}
+
+/* Никнейм */
+.chat-author {
+  font-weight: 700;
+  font-size: var(--name-size, 0.85em);
+  margin-right: 4px;
+  word-break: break-all;
+}
+
+/* Значки (badges) */
+.chat-badges {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  vertical-align: middle;
+  margin-right: 4px;
+}
+
+.chat-badges img {
+  width: 16px;
+  height: 16px;
+  object-fit: contain;
+}
+
+/* Текст сообщения */
+.chat-text {
+  color: var(--text-color, #ffffff);
+  line-height: 1.45;
+  display: inline;
+}
+
+/* Эмодзи / emotes */
+.chat-text img.emote {
+  height: 1.6em;
+  vertical-align: middle;
+  margin: 0 1px;
+}
+
+/* ===== Длинные сообщения: режимы прокрутки =====
+   JS добавляет класс .scroll-ticker / .scroll-vertical / .scroll-expand / .scroll-none
+   ===================================================================================== */
+
+/* ─── Горизонтальный тикер (ticker) ─── */
+
+/* .chat-content: контейнер-клиппер — overflow:hidden обрезает вышедший за край тикер */
+.chat-message.long-message.scroll-ticker .chat-content {
+  overflow: hidden;
+  white-space: nowrap;
+}
+
+/* .ticker-inner: inline-block, auto-ширина по содержимому.
+   Именно его scrollWidth - parent.clientWidth = фактическое переполнение. */
+.chat-message.long-message.scroll-ticker .ticker-inner {
+  display: inline-block;
+  white-space: nowrap;
+}
+
+/* Анимация на .ticker-inner — надёжнее, чем на flex-item (.chat-content) */
+.chat-message.scrolling.scroll-ticker .ticker-inner {
+  animation: tickerScroll var(--scroll-speed, 8s) ease-in-out 0s infinite;
+  will-change: transform;
+}
+
+@keyframes tickerScroll {
+  0%   { transform: translateX(0); }
+  15%  { transform: translateX(0); }                           /* пауза — прочитать начало */
+  80%  { transform: translateX(var(--scroll-amount, -60px)); } /* прокрутка до конца */
+  95%  { transform: translateX(var(--scroll-amount, -60px)); } /* пауза в конце */
+  100% { transform: translateX(0); }                           /* сброс */
+}
+
+/* ─── Вертикальная прокрутка (vertical) ─── */
+.chat-message.long-message.scroll-vertical .chat-content {
+  max-height: var(--long-msg-max-height, 80px);
+  overflow: hidden;
+  position: relative;
+}
+.chat-message.long-message.scroll-vertical .chat-text-wrap {
+  display: block;
+}
+.chat-message.scrolling.scroll-vertical .chat-text-wrap {
+  animation: scrollTextV var(--scroll-speed, 8s) linear 0.6s infinite;
+}
+@keyframes scrollTextV {
+  0%   { transform: translateY(0); }
+  80%  { transform: translateY(calc(-100% + var(--long-msg-max-height, 80px))); }
+  90%  { transform: translateY(calc(-100% + var(--long-msg-max-height, 80px))); }
+  100% { transform: translateY(0); }
+}
+/* Градиент-фейд снизу для вертикального режима */
+.chat-message.long-message.scroll-vertical::after {
+  content: '';
+  position: absolute;
+  bottom: 0; left: 0; right: 0;
+  height: 24px;
+  background: linear-gradient(transparent, var(--message-bg, rgba(0,0,0,0.55)));
+  border-radius: 0 0 var(--message-radius, 8px) var(--message-radius, 8px);
+  pointer-events: none;
+}
+.chat-message.scrolling.scroll-vertical::after {
+  display: none; /* во время прокрутки градиент убираем */
+}
+
+/* ─── Обрезать (none) ─── */
+.chat-message.long-message.scroll-none .chat-content {
+  overflow: hidden;
+  white-space: nowrap;
+}
+
+/* ─── Развернуть (expand) — сообщение показывается целиком, доп. правила не нужны ─── */
