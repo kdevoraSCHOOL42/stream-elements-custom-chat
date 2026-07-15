@@ -426,6 +426,15 @@ function addMessage(data) {
   const el = createMessageEl(data);
   chatList.appendChild(el);
 
+  // Запуск анимации появления в два шага (вставка → форс reflow → класс .appear
+  // на следующем кадре). Без этого при частых сообщениях подряд (busy-чат) браузер
+  // иногда «схлопывает» начальный и конечный кадр анимации в один — сообщение
+  // просто появляется без плавности, как будто анимация не сработала.
+  void el.offsetHeight; // форсируем reflow — фиксируем исходное состояние (opacity:0)
+  requestAnimationFrame(() => {
+    el.classList.add('appear');
+  });
+
   // Обрезать старые сообщения
   while (chatList.children.length > cfg.max_messages) {
     chatList.removeChild(chatList.firstChild);
@@ -460,9 +469,34 @@ function addMessage(data) {
       // Вертикальная прокрутка: запускаем с задержкой для первого прочтения
       setTimeout(() => el.classList.add('scrolling'), 800);
 
+    } else if (mode === 'expand') {
+      // Развернуть полностью: сначала сообщение свёрнуто (как vertical),
+      // затем один раз плавно раскрывается на полную высоту.
+      document.fonts.ready.then(() => requestAnimationFrame(() => {
+        if (!el.parentNode) return;
+        const content = el.querySelector('.chat-content');
+        if (!content) return;
+
+        // scrollHeight даёт полную высоту контента даже при overflow:hidden,
+        // так что измерение корректно ещё до раскрытия.
+        const fullHeight = content.scrollHeight;
+        el.style.setProperty('--expand-max-height', `${fullHeight}px`);
+
+        setTimeout(() => {
+          if (!el.parentNode) return;
+          el.classList.add('scrolling');
+
+          // После завершения перехода снимаем ограничение высоты, чтобы
+          // не подрезать контент, который может доразметиться позже
+          // (например, эмоты, догрузившиеся с задержкой).
+          content.addEventListener('transitionend', () => {
+            content.style.maxHeight = 'none';
+            content.style.overflow = 'visible';
+          }, { once: true });
+        }, 800);
+      }));
     }
-    // expand: ничего дополнительного не нужно — пузырь сам растягивается
-    // none:   ничего — текст просто обрезается CSS
+    // none: ничего — текст просто обрезается CSS
   }
 
   return el;

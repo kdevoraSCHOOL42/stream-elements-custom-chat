@@ -77,6 +77,15 @@ body {
 }
 
 /* ===== Одно сообщение ===== */
+/* Начальное состояние ЗАДАЁТСЯ отдельно от самой анимации (см. .appear ниже).
+   Это важно: если "opacity:0 + animation" висят на элементе с самого создания,
+   в некоторых движках рендеринга (в т.ч. CEF/OBS Browser Source) при частых
+   вставках подряд (быстрый чат) браузер иногда «схлопывает» первый кадр анимации
+   с последним прямо на вставке — визуально это выглядит как «анимация иногда не
+   срабатывает». Чтобы это исключить, JS сначала вставляет элемент в DOM в исходном
+   состоянии, форсирует reflow, и только потом (на следующем кадре) добавляет
+   класс .appear, который и запускает анимацию — так браузер гарантированно
+   успевает отрисовать оба состояния по отдельности. */
 .chat-message {
   display: flex;
   align-items: flex-start;
@@ -85,12 +94,15 @@ body {
   max-width: 100%;
   opacity: 0;
   transform: translateY(6px);
-  animation: var(--msg-anim, msgSlideUp) var(--msg-anim-speed, 0.25s) ease forwards;
   border-radius: var(--message-radius, 8px);
   padding: var(--message-padding, 6px 10px);
   overflow: hidden;
   position: relative;
   background-color: var(--message-bg, rgba(0, 0, 0, 0.55));
+}
+
+.chat-message.appear {
+  animation: var(--msg-anim, msgSlideUp) var(--msg-anim-speed, 0.25s) ease forwards;
 }
 
 /* ── Режим фонового изображения ──
@@ -339,4 +351,15 @@ body {
   white-space: nowrap;
 }
 
-/* ─── Развернуть (expand) — сообщение показывается целиком, доп. правила не нужны ─── */
+/* ─── Развернуть (expand) — сообщение сначала показывается свёрнутым (как в vertical),
+   затем один раз плавно раскрывается на полную высоту через transition ─── */
+.chat-message.long-message.scroll-expand .chat-content {
+  max-height: var(--long-msg-max-height, 80px);
+  overflow: hidden;
+  transition: max-height 0.5s ease;
+}
+.chat-message.long-message.scroll-expand.scrolling .chat-content {
+  /* Точная высота приходит из JS (--expand-max-height = scrollHeight),
+     запасное значение — на случай если JS ещё не успел её посчитать */
+  max-height: var(--expand-max-height, 1000px);
+}
