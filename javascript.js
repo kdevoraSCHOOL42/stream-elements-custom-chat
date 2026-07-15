@@ -15,6 +15,12 @@ const DEFAULTS = {
   name_color: '',            // '' = цвет чата Twitch
   message_bg: 'rgba(0,0,0,0.55)',
   message_bg_image: '',          // URL картинки фона сообщения
+
+  // ── Фон всего чата (подложка позади списка сообщений) ──
+  chat_bg_image:   '',           // URL картинки фона чата
+  chat_bg_size:    'cover',      // cover | contain | stretch
+  chat_bg_opacity: 100,          // 0-100
+  chat_bg_blur:    0,            // px
   emote_size: 28,            // высота эмотов (px)
   hide_commands: false,      // скрывать сообщения начинающиеся с «!»
 
@@ -180,12 +186,42 @@ function applyVars() {
 
   // ── Фоновое изображение сообщений ──
   applyMessageBgImage();
+
+  // ── Фоновое изображение всего чата ──
+  applyChatBackground();
 }
 
 /* Задаём CSS-переменные для оверлеев изображения */
 function applyMessageBgImage() {
   const root = document.documentElement.style;
   root.setProperty('--overlay-radius', `${Math.max(0, cfg.message_radius - 2)}px`);
+}
+
+/* Подложка: фото на весь блок чата (позади списка сообщений) */
+function applyChatBackground() {
+  const root = document.documentElement.style;
+  const bg   = $('chat-bg');
+  const url  = (cfg.chat_bg_image || '').trim();
+
+  if (!bg) return;
+
+  if (!url) {
+    bg.classList.remove('visible');
+    root.setProperty('--chat-bg-image', 'none');
+    return;
+  }
+
+  // stretch — не валидное значение background-size, эмулируем через "100% 100%"
+  const sizeMap = { cover: 'cover', contain: 'contain', stretch: '100% 100%' };
+  const size    = sizeMap[cfg.chat_bg_size] || 'cover';
+  const opacity = Math.min(100, Math.max(0, Number(cfg.chat_bg_opacity))) / 100;
+  const blur    = Math.max(0, Number(cfg.chat_bg_blur) || 0);
+
+  root.setProperty('--chat-bg-image',   `url("${url.replace(/"/g, '%22')}")`);
+  root.setProperty('--chat-bg-size',    size);
+  root.setProperty('--chat-bg-opacity', isNaN(opacity) ? 1 : opacity);
+  root.setProperty('--chat-bg-blur',    `${blur}px`);
+  bg.classList.add('visible');
 }
 
 /* Обновить баннеры */

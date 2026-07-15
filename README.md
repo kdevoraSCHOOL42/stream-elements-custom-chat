@@ -47,6 +47,7 @@ Custom StreamElements (Twitch and YouTube) chat widget with flexible styling opt
 - **YouTube-чат** — виджет работает и с YouTube-трансляциями, подключёнными через StreamElements (тот же `onEventReceived`/`message`), включая аватары и стабильный цвет ника для каждого автора (YouTube не присылает цвет ника, поэтому он назначается детерминированно на основе ID автора).
 - **Длинные сообщения** — три режима: горизонтальный тикер, вертикальная прокрутка, полное разворачивание или обрезка.
 - **Режим «текст поверх картинки»** — если задан `message_bg_image`, никнейм и текст сообщения позиционируются независимо друг от друга (9 позиций + точный пиксельный сдвиг).
+- **Фон чата** — фото-подложка на весь блок сообщений (группа полей «Фон чата»): ссылка на картинку, режим отображения cover/contain/stretch, прозрачность (0-100), размытие (px). Не путать с `message_bg_image` — та картинка идёт под текст каждого отдельного сообщения, а эта — под весь список чата.
 - **Модерация** — обработка событий `delete-message` и `delete-messages` (таймаут/бан удаляет сообщения пользователя).
 - **Безопасность** — весь пользовательский текст экранируется перед вставкой в DOM (защита от XSS).
 
@@ -160,9 +161,11 @@ Issues and pull requests are welcome. Before submitting a PR, please make sure:
 
 Built in collaboration with [twitch.tv/hlaaluhelseth](https://www.twitch.tv/hlaaluhelseth).
 
-### 🗒️ Changelog
+### 🗒️ Патч-ноуты / Changelog
 
+- **[2026-07-15]** Добавлен полноценный фон всего чата (группа полей «Фон чата»): ссылка на картинку, режим cover/contain/stretch, прозрачность и размытие. Слой рисуется отдельным элементом позади списка сообщений и не влияет на существующий фон отдельных сообщений (`message_bg_image`).
 - **[2026-07-15]** Added YouTube chat support: stable per-author name color derived from the author's ID (YouTube sends no name color), and synthetic emoji role badges (owner/moderator/channel member/verified) in place of Twitch's icon badges. Also fixed flaky message entrance animations under rapid message bursts, and added a working `expand` mode for long messages.
+- **[2026-07-15]** Added a full chat-wide background layer (new "Chat background" field group): image URL, cover/contain/stretch sizing, opacity, and blur. Rendered as a separate layer behind the message list; does not affect the existing per-message background (`message_bg_image`).
 
 ---
 

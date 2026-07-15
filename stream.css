@@ -58,6 +58,30 @@ body {
   min-height: 0;
 }
 
+/* ===== Подложка: фото на весь блок чата =====
+   Отдельный слой позади #chat-list. Скрыт (display:none), пока не задан URL —
+   управляется JS (класс .visible). Параметры (режим/прозрачность/размытие)
+   приходят как CSS-переменные, см. applyChatBackground() в javascript.js. */
+#chat-bg {
+  display: none;
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  background-repeat: no-repeat;
+  background-position: center;
+  background-image: var(--chat-bg-image, none);
+  background-size: var(--chat-bg-size, cover);
+  opacity: var(--chat-bg-opacity, 1);
+  filter: blur(var(--chat-bg-blur, 0px));
+  /* небольшой запас по краям, чтобы размытие не оставляло прозрачную кайму */
+  margin: calc(var(--chat-bg-blur, 0px) * -1);
+}
+
+#chat-bg.visible {
+  display: block;
+}
+
 #chat-list {
   list-style: none;
   display: flex;
@@ -70,6 +94,8 @@ body {
   overflow-x: hidden;
   height: 100%;
   scrollbar-width: none;
+  position: relative;
+  z-index: 1;
 }
 
 #chat-list::-webkit-scrollbar {

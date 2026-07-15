@@ -81,6 +81,39 @@
     "max": 3,
     "group": "Сообщения"
   },
+  "chat_bg_image": {
+    "type": "text",
+    "label": "Ссылка на картинку фона чата",
+    "value": "",
+    "group": "Фон чата"
+  },
+  "chat_bg_size": {
+    "type": "dropdown",
+    "label": "Режим отображения",
+    "value": "cover",
+    "options": [
+      { "label": "Заполнить (cover)",        "value": "cover"   },
+      { "label": "Вписать целиком (contain)", "value": "contain" },
+      { "label": "Растянуть (stretch)",       "value": "stretch" }
+    ],
+    "group": "Фон чата"
+  },
+  "chat_bg_opacity": {
+    "type": "number",
+    "label": "Прозрачность (0-100)",
+    "value": 100,
+    "min": 0,
+    "max": 100,
+    "group": "Фон чата"
+  },
+  "chat_bg_blur": {
+    "type": "number",
+    "label": "Размытие (px)",
+    "value": 0,
+    "min": 0,
+    "max": 40,
+    "group": "Фон чата"
+  },
   "message_bg": {
     "type": "text",
     "label": "Цвет фона сообщения (CSS / rgba)",
