@@ -1,5 +1,7 @@
 # Stream Elements Custom Chat
 
+[Русский](README.md) | **English** | [Español](README.es.md)
+
 ![License](https://img.shields.io/badge/license-MIT-blue.svg)
 ![StreamElements](https://img.shields.io/badge/StreamElements-Custom%20Widget-6441A5?logo=twitch&logoColor=white)
 ![Made with](https://img.shields.io/badge/JS-79.7%25-yellow) ![CSS](https://img.shields.io/badge/CSS-19.1%25-blue) ![HTML](https://img.shields.io/badge/HTML-1.2%25-orange)
@@ -29,7 +31,9 @@ Custom StreamElements (Twitch and YouTube) chat widget with flexible styling opt
 | `stream.html` | Widget markup — chat container and banners |
 | `stream.css` | Styles: animations, positioning, scroll modes |
 | `javascript.js` | Widget logic: SE event handling, emotes, badges, message rendering |
-| `fields.js` / `fields/fields.js` | Field definitions for the StreamElements editor (labels in Russian) |
+| `fields.js` | Field definitions for the StreamElements editor — Russian (default) |
+| `fields.en.js` | Same fields, labels in English |
+| `fields.es.js` | Same fields, labels in Spanish |
 | `streamdata.js` | Sample JSON data for previewing the widget in the editor |
 | `LICENSE` | MIT license |
 
@@ -53,13 +57,15 @@ Custom StreamElements (Twitch and YouTube) chat widget with flexible styling opt
 2. **HTML** tab → paste the contents of `stream.html`.
 3. **CSS** tab → paste the contents of `stream.css`.
 4. **JS** tab → paste the contents of `javascript.js`.
-5. **Fields** tab → paste the contents of `fields.js`.
+5. **Fields** tab → paste the contents of `fields.js` (or `fields.en.js` / `fields.es.js` if you'd rather have the settings panel in English/Spanish — StreamElements can't detect your browser language for this tab on its own, so you pick the file by hand).
 6. **Data** tab (preview JSON) → optionally paste `streamdata.js` to preview test messages in the editor.
 7. Save and configure the settings in the widget panel.
 
 ### 🔧 Field configuration
 
 All widget options (banners, fonts, animations, scroll modes, text positioning) are defined in `fields.js` and rendered as an easy-to-use panel directly inside the StreamElements editor — no code changes are needed for basic styling. To change behavior (e.g. add a new animation mode or emote source), edit `javascript.js`.
+
+**Settings panel language.** The Fields tab in the StreamElements editor just reads a static JSON — it doesn't run any code, so it can't automatically pick up the streamer's browser language. Instead of one Russian-only file, the repo ships three structurally identical files — `fields.js` (ru), `fields.en.js` (en), `fields.es.js` (es). Paste whichever one matches your language into the Fields tab.
 
 ### 📋 Requirements
 

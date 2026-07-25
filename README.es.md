@@ -1,5 +1,7 @@
 # Stream Elements Custom Chat
 
+[Русский](README.md) | [English](README.en.md) | **Español**
+
 ![License](https://img.shields.io/badge/license-MIT-blue.svg)
 ![StreamElements](https://img.shields.io/badge/StreamElements-Custom%20Widget-6441A5?logo=twitch&logoColor=white)
 ![Made with](https://img.shields.io/badge/JS-79.7%25-yellow) ![CSS](https://img.shields.io/badge/CSS-19.1%25-blue) ![HTML](https://img.shields.io/badge/HTML-1.2%25-orange)
@@ -29,7 +31,9 @@ Widget de chat personalizado para StreamElements (Twitch y YouTube) con opciones
 | `stream.html` | Estructura del widget — contenedor del chat y banners |
 | `stream.css` | Estilos: animaciones, posicionamiento, modos de desplazamiento |
 | `javascript.js` | Lógica del widget: manejo de eventos de SE, emotes, insignias, renderizado de mensajes |
-| `fields.js` / `fields/fields.js` | Definición de campos para el editor de StreamElements (etiquetas en ruso) |
+| `fields.js` | Definición de campos para el editor de StreamElements — ruso (por defecto) |
+| `fields.en.js` | Los mismos campos, etiquetas en inglés |
+| `fields.es.js` | Los mismos campos, etiquetas en español |
 | `streamdata.js` | Datos de ejemplo (JSON) para previsualizar el widget en el editor |
 | `LICENSE` | Licencia MIT |
 
@@ -53,13 +57,15 @@ Widget de chat personalizado para StreamElements (Twitch y YouTube) con opciones
 2. Pestaña **HTML** → pega el contenido de `stream.html`.
 3. Pestaña **CSS** → pega el contenido de `stream.css`.
 4. Pestaña **JS** → pega el contenido de `javascript.js`.
-5. Pestaña **Fields** → pega el contenido de `fields.js`.
+5. Pestaña **Fields** → pega el contenido de `fields.js` (o de `fields.en.js` / `fields.es.js` si prefieres el panel de ajustes en inglés/español — StreamElements no puede detectar el idioma del navegador en esta pestaña, así que hay que elegir el archivo manualmente).
 6. Pestaña **Data** (JSON de vista previa) → opcionalmente pega `streamdata.js` para previsualizar mensajes de prueba en el editor.
 7. Guarda y configura los parámetros en el panel del widget.
 
 ### 🔧 Configuración de campos
 
 Todas las opciones del widget (banners, fuentes, animaciones, modos de desplazamiento, posicionamiento de texto) están definidas en `fields.js` y se muestran como un panel fácil de usar directamente dentro del editor de StreamElements — no se necesita modificar código para el estilo básico. Para cambiar el comportamiento (por ejemplo, añadir un nuevo modo de animación o fuente de emotes), las modificaciones se hacen en `javascript.js`.
+
+**Idioma del panel de ajustes.** La pestaña Fields del editor de StreamElements solo lee un JSON estático — no ejecuta código, así que no puede detectar automáticamente el idioma del navegador del streamer. En vez de un único archivo en ruso, el repositorio incluye tres archivos con la misma estructura — `fields.js` (ru), `fields.en.js` (en), `fields.es.js` (es). Pega el que coincida con tu idioma en la pestaña Fields.
 
 ### 📋 Requisitos
 
