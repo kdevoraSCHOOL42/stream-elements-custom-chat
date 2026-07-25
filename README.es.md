@@ -4,7 +4,7 @@
 
 ![License](https://img.shields.io/badge/license-MIT-blue.svg)
 ![StreamElements](https://img.shields.io/badge/StreamElements-Custom%20Widget-6441A5?logo=twitch&logoColor=white)
-![Made with](https://img.shields.io/badge/JS-79.7%25-yellow) ![CSS](https://img.shields.io/badge/CSS-19.1%25-blue) ![HTML](https://img.shields.io/badge/HTML-1.2%25-orange)
+![Made with](https://img.shields.io/badge/JS-74.4%25-yellow) ![CSS](https://img.shields.io/badge/CSS-24.2%25-blue) ![HTML](https://img.shields.io/badge/HTML-1.4%25-orange)
 
 Widget de chat personalizado para StreamElements (Twitch y YouTube) con opciones de estilo flexibles: banners, fuentes, animaciones de mensajes, soporte de emotes (Twitch / BTTV / FFZ), modos de desplazamiento para mensajes largos y posicionamiento de texto sobre una imagen.
 
