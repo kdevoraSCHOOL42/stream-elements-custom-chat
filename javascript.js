@@ -363,6 +363,24 @@ function buildMessageHtml(msgObj) {
   return result;
 }
 
+/* ---- Разрешение URL аватара ---- */
+/**
+ * StreamElements передаёт avatar для YouTube, но НЕ для Twitch.
+ * Для Twitch собираем URL из имени пользователя через CDN Twitch.
+ */
+function resolveAvatarUrl(data) {
+  if (data.avatar) return data.avatar;
+  if (data.profileImage) return data.profileImage;
+  if (data.profileImageUrl) return data.profileImageUrl;
+  const username = data.name || data.displayName || '';
+  if (username) {
+    return 'https://static-cdn.jtvnw.net/jtv_user_pictures/'
+      + encodeURIComponent(username)
+      + '-profile_image-300x300.png';
+  }
+  return '';
+}
+
 /* ---- Создание элемента сообщения ---- */
 function createMessageEl(data) {
   const li = document.createElement('li');
@@ -424,7 +442,7 @@ function createMessageEl(data) {
 
   /* ── Обычный режим ── */
   } else {
-    const avatarUrl  = data.avatar || data.profileImage || '';
+    const avatarUrl  = resolveAvatarUrl(data);
     const avatarHtml = `<img class="chat-avatar" src="${escapeAttr(avatarUrl)}" alt="" onerror="this.style.display='none'" />`;
 
     if (isLong) li.classList.add('long-message');
