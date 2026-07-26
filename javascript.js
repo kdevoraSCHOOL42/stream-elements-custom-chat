@@ -366,7 +366,8 @@ function buildMessageHtml(msgObj) {
 /* ---- Разрешение URL аватара ---- */
 /**
  * StreamElements передаёт avatar для YouTube, но НЕ для Twitch.
- * Для Twitch собираем URL из имени пользователя через CDN Twitch.
+ * Для Twitch используем twitch-avatar.dev как fallback,
+ * который возвращает аватар по нику без необходимости UUID.
  */
 function resolveAvatarUrl(data) {
   if (data.avatar) return data.avatar;
@@ -374,9 +375,9 @@ function resolveAvatarUrl(data) {
   if (data.profileImageUrl) return data.profileImageUrl;
   const username = data.name || data.displayName || '';
   if (username) {
-    return 'https://static-cdn.jtvnw.net/jtv_user_pictures/'
+    return 'https://twitch-avatar.dev/'
       + encodeURIComponent(username)
-      + '-profile_image-300x300.png';
+      + '.png';
   }
   return '';
 }
