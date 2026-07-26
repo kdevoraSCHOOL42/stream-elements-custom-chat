@@ -7,6 +7,7 @@
         "data": {
           "displayName": "StreamerFan",
           "name": "streamerfan",
+          "userId": "1001",
           "color": "#ff6b6b",
           "text": "Привет стримеру! Отличный стрим! 🎉",
           "displayColor": "#ff6b6b",
@@ -23,6 +24,7 @@
         "data": {
           "displayName": "Viewer42",
           "name": "viewer42",
+          "userId": "1002",
           "color": "#4ecdc4",
           "text": "Это очень длинное тестовое сообщение, чтобы проверить работу автоматической прокрутки — когда текст превышает заданное количество символов, сообщение автоматически начинает прокручиваться вверх, чтобы можно было прочитать его полностью. Это позволяет сохранить компактный вид чата.",
           "displayColor": "#4ecdc4",
@@ -39,6 +41,7 @@
         "data": {
           "displayName": "Moderator_X",
           "name": "moderator_x",
+          "userId": "1003",
           "color": "#ffe66d",
           "text": "Всем добро пожаловать на стрим! Читайте правила чата!",
           "displayColor": "#ffe66d",
@@ -60,6 +63,7 @@
         "data": {
           "displayName": "Subscriber99",
           "name": "subscriber99",
+          "userId": "1004",
           "color": "#a8e6cf",
           "text": "PogChamp PogChamp PogChamp великолепно!",
           "displayColor": "#a8e6cf",
@@ -118,6 +122,7 @@
         "data": {
           "displayName": "KappaUser",
           "name": "kappauser",
+          "userId": "1005",
           "color": "#ff9f43",
           "text": "Kappa это был лучший момент BibleThump",
           "displayColor": "#ff9f43",
@@ -159,6 +164,7 @@
         "data": {
           "displayName": "BTTVfan",
           "name": "bttvfan",
+          "userId": "1006",
           "color": "#ee5a24",
           "text": "monkaS когда нет сейвпоинта OMEGALUL",
           "displayColor": "#ee5a24",

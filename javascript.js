@@ -366,13 +366,19 @@ function buildMessageHtml(msgObj) {
 /* ---- Разрешение URL аватара ---- */
 /**
  * StreamElements передаёт avatar для YouTube, но НЕ для Twitch.
- * Для Twitch используем twitch-avatar.dev как fallback,
- * который возвращает аватар по нику без необходимости UUID.
+ * Для Twitch используем avatars.twitch.tv с числовым userId,
+ * который доступен в событиях SE без необходимости UUID.
+ * twitch-avatar.dev остаётся резервным fallback'ом.
  */
 function resolveAvatarUrl(data) {
   if (data.avatar) return data.avatar;
   if (data.profileImage) return data.profileImage;
   if (data.profileImageUrl) return data.profileImageUrl;
+  if (data.userId) {
+    return 'https://avatars.twitch.tv/'
+      + '?user_id=' + encodeURIComponent(data.userId)
+      + '&size=' + (cfg.avatar_size || 150);
+  }
   const username = data.name || data.displayName || '';
   if (username) {
     return 'https://twitch-avatar.dev/'
@@ -617,11 +623,13 @@ if (typeof window.StreamElements === 'undefined') {
     const testMessages = [
       {
         displayName: 'StreamerFan', displayColor: '#ff6b6b',
+        userId: '2001',
         text: 'Привет! Это тест виджета чата 👋',
         emotes: [], badges: [],
       },
       {
         displayName: 'KappaUser', displayColor: '#ff9f43',
+        userId: '2002',
         text: 'Kappa это было круто BibleThump',
         badges: [],
         emotes: [
@@ -633,11 +641,13 @@ if (typeof window.StreamElements === 'undefined') {
       },
       {
         displayName: 'Viewer42', displayColor: '#4ecdc4',
+        userId: '2003',
         text: 'Очень длинное сообщение для проверки автоматической прокрутки текста — Lorem ipsum dolor sit amet, consectetur adipiscing elit. Pellentesque habitant morbi tristique senectus.',
         emotes: [], badges: [],
       },
       {
         displayName: 'ModeratorX', displayColor: '#ffe66d',
+        userId: '2004',
         text: 'PogChamp PogChamp стрим огонь!',
         badges: [{ url: 'https://static-cdn.jtvnw.net/badges/v1/3267646d-33f0-4b17-b3df-f923a41db1d6/1', description: 'Moderator' }],
         emotes: [
@@ -649,6 +659,7 @@ if (typeof window.StreamElements === 'undefined') {
       },
       {
         displayName: 'BTTVuser', displayColor: '#a8e6cf',
+        userId: '2005',
         text: 'monkaS когда дедлайн завтра OMEGALUL',
         emotes: [
           { type: 'bttv', name: 'monkaS',   id: '56e9f494fff3cc5c35e5287e', start: 0,  end: 5,
@@ -660,6 +671,7 @@ if (typeof window.StreamElements === 'undefined') {
       },
       {
         displayName: '!CommandUser', displayColor: '#c0c0c0',
+        userId: '2006',
         text: '!команда (это сообщение скрыто если включён hide_commands)',
         emotes: [], badges: [],
       },
