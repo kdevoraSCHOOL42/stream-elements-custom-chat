@@ -431,6 +431,8 @@ function createMessageEl(data) {
   const msgHtml     = buildMessageHtml(data);
   const isLong      = (data.text || '').length > cfg.long_msg_threshold;
   const imgUrl      = (cfg.message_bg_image || '').trim();
+  const avatarUrl   = resolveAvatarUrl(data);
+  const avatarHtml  = `<img class="chat-avatar"${avatarUrl ? ` src="${escapeAttr(avatarUrl)}"` : ''} alt="" onerror="this.style.display='none'" />`;
 
   /* ── Режим: сообщение поверх картинки ── */
   if (imgUrl) {
@@ -458,7 +460,7 @@ function createMessageEl(data) {
       <div class="msg-author-overlay ${aPos}"
            style="--a-off-x:${aOffX};--a-off-y:${aOffY}">
         <div class="msg-overlay-pill" style="background:${escapeAttr(aBg)}">
-          <span class="chat-badges">${badgesHtml}</span><span
+          ${avatarHtml}<span class="chat-badges">${badgesHtml}</span><span
             class="chat-author"
             style="color:${escapeAttr(authorColor)}">${authorName}</span>
         </div>
@@ -475,9 +477,6 @@ function createMessageEl(data) {
 
   /* ── Обычный режим ── */
   } else {
-    const avatarUrl  = resolveAvatarUrl(data);
-    const avatarHtml = `<img class="chat-avatar"${avatarUrl ? ` src="${escapeAttr(avatarUrl)}"` : ''} alt="" onerror="this.style.display='none'" />`;
-
     if (isLong) li.classList.add('long-message');
 
     // Контент одинаков для всех режимов, но для тикера оборачиваем в .ticker-inner —

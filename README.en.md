@@ -96,6 +96,7 @@ Built in collaboration with [twitch.tv/hlaaluhelseth](https://www.twitch.tv/hlaa
 
 ### 🗒️ Changelog
 
+- **[2026-07-28]** User avatars are now displayed in both layouts: the standard message box and the custom `message_bg_image` overlay. In image mode, the avatar appears next to the username and remains controlled by the “Show avatars” setting.
 - **[2026-07-28]** Fixed Twitch avatars: removed the invalid `avatars.twitch.tv` endpoint, added login-based resolution of the current CDN image URL with caching, and preserved priority for avatar URLs supplied by StreamElements. The fix works for every chat participant without a predefined user list.
 - **[2026-07-28]** Improved message filtering: commands beginning with `!` are detected even after leading whitespace; added the `hidden_bots` field to hide every message from selected bots case-insensitively. The filter applies to both regular and StreamElements test events. Defaults are `Nightbot` and `StreamElements`.
 - **[2026-07-15]** Added YouTube chat support: stable per-author name color derived from the author's ID (YouTube sends no name color), and synthetic emoji role badges (owner/moderator/channel member/verified) in place of Twitch's icon badges. Also fixed flaky message entrance animations under rapid message bursts, and added a working `expand` mode for long messages.

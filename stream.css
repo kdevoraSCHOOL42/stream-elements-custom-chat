@@ -261,6 +261,13 @@ body {
   display: block;
 }
 
+/* В режиме фонового изображения аватар находится рядом с никнеймом в оверлее. */
+.show-avatars .has-bg-image .chat-avatar {
+  display: inline-block;
+  vertical-align: middle;
+  margin: 0 6px 0 0;
+}
+
 /* Контент: ник + текст */
 .chat-content {
   flex: 1;
