@@ -509,6 +509,9 @@ function createMessageEl(data) {
 
 /* ---- Добавить сообщение в список ---- */
 function addMessage(data) {
+  // Единая точка фильтрации для live-, test- и локальных preview-сообщений.
+  if (shouldHideMessage(data)) return null;
+
   const el = createMessageEl(data);
   chatList.appendChild(el);
   loadTwitchAvatar(el.querySelector('.chat-avatar'), data);

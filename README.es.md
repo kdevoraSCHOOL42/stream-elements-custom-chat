@@ -96,6 +96,7 @@ Widget creado en colaboración con [twitch.tv/hlaaluhelseth](https://www.twitch.
 
 ### 🗒️ Registro de cambios
 
+- **[2026-07-28]** El filtrado de comandos ahora se ejecuta en el único punto de inserción de mensajes. Con «Ocultar comandos» activado, se oculta cualquier mensaje cuyo texto empiece por `!` después de posibles espacios iniciales, incluidos los mensajes de vista previa integrados y el usuario de prueba `!CommandUser`.
 - **[2026-07-28]** Los avatares de usuario ahora se muestran en ambos diseños: el cuadro de mensaje estándar y la superposición personalizada `message_bg_image`. En el modo de imagen, el avatar aparece junto al nombre de usuario y sigue controlado por la opción «Mostrar avatares».
 - **[2026-07-28]** Se corrigieron los avatares de Twitch: se eliminó el endpoint no válido `avatars.twitch.tv`, se añadió la resolución por nombre de usuario de la URL actual de la imagen CDN con caché y se mantuvo la prioridad de las URL de avatar proporcionadas por StreamElements. La corrección funciona para todos los participantes sin una lista previa de usuarios.
 - **[2026-07-28]** Se mejoró el filtrado de mensajes: los comandos que empiezan por `!` se detectan incluso después de espacios iniciales; se añadió el campo `hidden_bots` para ocultar todos los mensajes de los bots seleccionados sin distinguir mayúsculas de minúsculas. El filtro se aplica tanto a eventos normales como de prueba de StreamElements. Los valores predeterminados son `Nightbot` y `StreamElements`.

@@ -96,6 +96,7 @@ Built in collaboration with [twitch.tv/hlaaluhelseth](https://www.twitch.tv/hlaa
 
 ### 🗒️ Changelog
 
+- **[2026-07-28]** Command filtering now runs at the single message insertion point. With “Hide commands” enabled, every message whose text starts with `!` after optional leading whitespace is hidden, including built-in preview messages and the `!CommandUser` test user.
 - **[2026-07-28]** User avatars are now displayed in both layouts: the standard message box and the custom `message_bg_image` overlay. In image mode, the avatar appears next to the username and remains controlled by the “Show avatars” setting.
 - **[2026-07-28]** Fixed Twitch avatars: removed the invalid `avatars.twitch.tv` endpoint, added login-based resolution of the current CDN image URL with caching, and preserved priority for avatar URLs supplied by StreamElements. The fix works for every chat participant without a predefined user list.
 - **[2026-07-28]** Improved message filtering: commands beginning with `!` are detected even after leading whitespace; added the `hidden_bots` field to hide every message from selected bots case-insensitively. The filter applies to both regular and StreamElements test events. Defaults are `Nightbot` and `StreamElements`.
