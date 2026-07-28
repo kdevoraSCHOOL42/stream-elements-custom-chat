@@ -298,6 +298,12 @@
     "value": false,
     "group": "Adicional"
   },
+  "hidden_bots": {
+    "type": "text",
+    "label": "Ocultar mensajes de bots (nombres separados por comas)",
+    "value": "Nightbot, StreamElements",
+    "group": "Adicional"
+  },
   "emote_size": {
     "type": "number",
     "label": "Altura de los emotes (px)",

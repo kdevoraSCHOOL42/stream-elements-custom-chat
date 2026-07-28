@@ -23,6 +23,7 @@ const DEFAULTS = {
   chat_bg_blur:    0,            // px
   emote_size: 28,            // высота эмотов (px)
   hide_commands: false,      // скрывать сообщения начинающиеся с «!»
+  hidden_bots: '',           // имена ботов через запятую
 
   // ── Никнейм на изображении ──
   author_position:  'top-left',  // 9-позиций: top/middle/bottom + left/center/right
@@ -363,29 +364,54 @@ function buildMessageHtml(msgObj) {
   return result;
 }
 
+/* ---- Фильтрация команд и выбранных ботов ---- */
+function shouldHideMessage(data) {
+  if (!data) return false;
+
+  const text = String(data.text || '').trimStart();
+  if (cfg.hide_commands && text.startsWith('!')) return true;
+
+  const author = String(data.name || data.displayName || '').trim().toLowerCase();
+  const hiddenBots = String(cfg.hidden_bots || '')
+    .split(/[\n,;]+/)
+    .map(name => name.trim().replace(/^@/, '').toLowerCase())
+    .filter(Boolean);
+
+  return !!author && hiddenBots.includes(author.replace(/^@/, ''));
+}
+
 /* ---- Разрешение URL аватара ---- */
 /**
- * StreamElements передаёт avatar для YouTube, но НЕ для Twitch.
- * Для Twitch используем avatars.twitch.tv с числовым userId,
- * который доступен в событиях SE без необходимости UUID.
- * twitch-avatar.dev остаётся резервным fallback'ом.
+ * StreamElements иногда передаёт avatar/profileImageUrl напрямую.
+ * Для Twitch, где URL обычно отсутствует, DecAPI возвращает актуальный
+ * CDN-адрес изображения по логину. Результат кэшируется на время виджета.
  */
 function resolveAvatarUrl(data) {
   if (data.avatar) return data.avatar;
   if (data.profileImage) return data.profileImage;
   if (data.profileImageUrl) return data.profileImageUrl;
-  if (data.userId) {
-    return 'https://avatars.twitch.tv/'
-      + '?user_id=' + encodeURIComponent(data.userId)
-      + '&size=' + (cfg.avatar_size || 150);
-  }
-  const username = data.name || data.displayName || '';
-  if (username) {
-    return 'https://twitch-avatar.dev/'
-      + encodeURIComponent(username)
-      + '.png';
-  }
   return '';
+}
+
+const avatarCache = new Map();
+
+async function loadTwitchAvatar(img, data) {
+  if (!cfg.show_avatars || !img || img.hasAttribute('src')) return;
+  const username = String(data.name || data.displayName || '').trim().replace(/^@/, '');
+  if (!username) return;
+
+  const key = username.toLowerCase();
+  let request = avatarCache.get(key);
+  if (!request) {
+    request = fetch(`https://decapi.me/twitch/avatar/${encodeURIComponent(username)}`)
+      .then(response => response.ok ? response.text() : '')
+      .then(url => /^https?:\/\//i.test(url.trim()) ? url.trim() : '')
+      .catch(() => '');
+    avatarCache.set(key, request);
+  }
+
+  const url = await request;
+  if (url && img.isConnected) img.src = url;
 }
 
 /* ---- Создание элемента сообщения ---- */
@@ -450,7 +476,7 @@ function createMessageEl(data) {
   /* ── Обычный режим ── */
   } else {
     const avatarUrl  = resolveAvatarUrl(data);
-    const avatarHtml = `<img class="chat-avatar" src="${escapeAttr(avatarUrl)}" alt="" onerror="this.style.display='none'" />`;
+    const avatarHtml = `<img class="chat-avatar"${avatarUrl ? ` src="${escapeAttr(avatarUrl)}"` : ''} alt="" onerror="this.style.display='none'" />`;
 
     if (isLong) li.classList.add('long-message');
 
@@ -486,6 +512,7 @@ function createMessageEl(data) {
 function addMessage(data) {
   const el = createMessageEl(data);
   chatList.appendChild(el);
+  loadTwitchAvatar(el.querySelector('.chat-avatar'), data);
 
   // Запуск анимации появления в два шага (вставка → форс reflow → класс .appear
   // на следующем кадре). Без этого при частых сообщениях подряд (busy-чат) браузер
@@ -588,7 +615,7 @@ window.addEventListener('onEventReceived', e => {
     if (!d) return;
 
     // Фильтр команд — только если включён в настройках
-    if (cfg.hide_commands && (d.text || '').startsWith('!')) return;
+    if (shouldHideMessage(d)) return;
 
     addMessage(d);
 
@@ -611,7 +638,7 @@ window.addEventListener('onEventReceived', e => {
     if (event && event.listener === 'message') {
       const td = event.event && event.event.data;
       if (!td) return;
-      if (cfg.hide_commands && (td.text || '').startsWith('!')) return;
+      if (shouldHideMessage(td)) return;
       addMessage(td);
     }
   }

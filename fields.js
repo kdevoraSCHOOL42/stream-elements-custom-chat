@@ -298,6 +298,12 @@
     "value": false,
     "group": "Дополнительно"
   },
+  "hidden_bots": {
+    "type": "text",
+    "label": "Скрывать сообщения ботов (имена через запятую)",
+    "value": "Nightbot, StreamElements",
+    "group": "Дополнительно"
+  },
   "emote_size": {
     "type": "number",
     "label": "Высота эмотов (px)",
