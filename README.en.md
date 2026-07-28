@@ -45,6 +45,8 @@ Custom StreamElements (Twitch and YouTube) chat widget with flexible styling opt
 - **Emotes** — Twitch, BTTV, and FFZ support via a unified `urls` format.
 - **Badges** — moderator, subscriber, etc. on Twitch; synthetic emoji badges (owner/moderator/channel member/verified) on YouTube, since the platform doesn't provide ready-made icons.
 - **YouTube chat** — the widget also works with YouTube streams connected through StreamElements (same `onEventReceived`/`message` event), including avatars and a stable per-author name color (YouTube sends no name color, so one is assigned deterministically from the author's ID).
+- **Twitch avatars** — current profile images are fetched by login for every chat participant and cached for the widget session; when StreamElements already provides an avatar URL, that URL takes priority.
+- **Chat filtering** — commands starting with `!` and all messages from selected bots can be hidden. Bot names are entered as a comma-separated list in the “Hide bot messages” field.
 - **Long messages** — four modes: horizontal ticker, vertical scroll, full expand, or truncate.
 - **"Text over image" mode** — when `message_bg_image` is set, the author name and message text are positioned independently (9 anchor points plus precise pixel offsets).
 - **Chat background** — a photo backdrop behind the entire message list (separate "Chat background" field group): image URL, cover/contain/stretch sizing, opacity (0-100), blur (px). Not to be confused with `message_bg_image`, which sits behind each individual message rather than the whole chat list.
@@ -63,7 +65,7 @@ Custom StreamElements (Twitch and YouTube) chat widget with flexible styling opt
 
 ### 🔧 Field configuration
 
-All widget options (banners, fonts, animations, scroll modes, text positioning) are defined in `fields.js` and rendered as an easy-to-use panel directly inside the StreamElements editor — no code changes are needed for basic styling. To change behavior (e.g. add a new animation mode or emote source), edit `javascript.js`.
+All widget options (banners, fonts, animations, scroll modes, text positioning, and chat filtering) are defined in `fields.js` and rendered as an easy-to-use panel directly inside the StreamElements editor — no code changes are needed for basic configuration. Enable “Hide commands” to remove messages starting with `!`; enter comma-separated logins in “Hide bot messages” (default: `Nightbot, StreamElements`). To change behavior (e.g. add a new animation mode or emote source), edit `javascript.js`.
 
 **Settings panel language.** The Fields tab in the StreamElements editor just reads a static JSON — it doesn't run any code, so it can't automatically pick up the streamer's browser language. Instead of one Russian-only file, the repo ships three structurally identical files — `fields.js` (ru), `fields.en.js` (en), `fields.es.js` (es). Paste whichever one matches your language into the Fields tab.
 
@@ -94,6 +96,8 @@ Built in collaboration with [twitch.tv/hlaaluhelseth](https://www.twitch.tv/hlaa
 
 ### 🗒️ Changelog
 
+- **[2026-07-28]** Fixed Twitch avatars: removed the invalid `avatars.twitch.tv` endpoint, added login-based resolution of the current CDN image URL with caching, and preserved priority for avatar URLs supplied by StreamElements. The fix works for every chat participant without a predefined user list.
+- **[2026-07-28]** Improved message filtering: commands beginning with `!` are detected even after leading whitespace; added the `hidden_bots` field to hide every message from selected bots case-insensitively. The filter applies to both regular and StreamElements test events. Defaults are `Nightbot` and `StreamElements`.
 - **[2026-07-15]** Added YouTube chat support: stable per-author name color derived from the author's ID (YouTube sends no name color), and synthetic emoji role badges (owner/moderator/channel member/verified) in place of Twitch's icon badges. Also fixed flaky message entrance animations under rapid message bursts, and added a working `expand` mode for long messages.
 - **[2026-07-15]** Added a full chat-wide background layer (new "Chat background" field group): image URL, cover/contain/stretch sizing, opacity, and blur. Rendered as a separate layer behind the message list; does not affect the existing per-message background (`message_bg_image`).
 

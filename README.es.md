@@ -45,6 +45,8 @@ Widget de chat personalizado para StreamElements (Twitch y YouTube) con opciones
 - **Emotes** — soporte para Twitch, BTTV y FFZ mediante un formato unificado `urls`.
 - **Insignias** — moderador, suscriptor, etc. en Twitch; en YouTube, insignias de emoji sintéticas (propietario/moderador/miembro del canal/verificado), ya que la plataforma no proporciona iconos propios.
 - **Chat de YouTube** — el widget también funciona con transmisiones de YouTube conectadas mediante StreamElements (el mismo evento `onEventReceived`/`message`), incluyendo avatares y un color de nombre estable por autor (YouTube no envía color de nombre, así que se asigna de forma determinista según el ID del autor).
+- **Avatares de Twitch** — las imágenes de perfil actuales se obtienen por el nombre de usuario de cada participante y se almacenan en caché durante la sesión del widget; si StreamElements ya proporciona una URL de avatar, esa URL tiene prioridad.
+- **Filtrado del chat** — se pueden ocultar los comandos que empiezan por `!` y todos los mensajes de los bots seleccionados. Los nombres de los bots se introducen separados por comas en el campo «Ocultar mensajes de bots».
 - **Mensajes largos** — cuatro modos: ticker horizontal, desplazamiento vertical, expansión completa o truncado.
 - **Modo "texto sobre imagen"** — si se define `message_bg_image`, el nombre de usuario y el texto del mensaje se posicionan de forma independiente (9 puntos de anclaje más desplazamiento en píxeles).
 - **Fondo del chat** — una imagen de fondo detrás de toda la lista de mensajes (grupo de campos separado "Fondo del chat"): URL de la imagen, ajuste cover/contain/stretch, opacidad (0-100), desenfoque (px). No confundir con `message_bg_image`, que se coloca detrás de cada mensaje individual y no detrás de toda la lista del chat.
@@ -63,7 +65,7 @@ Widget de chat personalizado para StreamElements (Twitch y YouTube) con opciones
 
 ### 🔧 Configuración de campos
 
-Todas las opciones del widget (banners, fuentes, animaciones, modos de desplazamiento, posicionamiento de texto) están definidas en `fields.js` y se muestran como un panel fácil de usar directamente dentro del editor de StreamElements — no se necesita modificar código para el estilo básico. Para cambiar el comportamiento (por ejemplo, añadir un nuevo modo de animación o fuente de emotes), las modificaciones se hacen en `javascript.js`.
+Todas las opciones del widget (banners, fuentes, animaciones, modos de desplazamiento, posicionamiento de texto y filtrado del chat) están definidas en `fields.js` y se muestran como un panel fácil de usar directamente dentro del editor de StreamElements — no se necesita modificar código para la configuración básica. Activa «Ocultar comandos» para eliminar mensajes que empiezan por `!`; introduce los nombres de usuario separados por comas en «Ocultar mensajes de bots» (valor predeterminado: `Nightbot, StreamElements`). Para cambiar el comportamiento (por ejemplo, añadir un nuevo modo de animación o fuente de emotes), las modificaciones se hacen en `javascript.js`.
 
 **Idioma del panel de ajustes.** La pestaña Fields del editor de StreamElements solo lee un JSON estático — no ejecuta código, así que no puede detectar automáticamente el idioma del navegador del streamer. En vez de un único archivo en ruso, el repositorio incluye tres archivos con la misma estructura — `fields.js` (ru), `fields.en.js` (en), `fields.es.js` (es). Pega el que coincida con tu idioma en la pestaña Fields.
 
@@ -94,6 +96,8 @@ Widget creado en colaboración con [twitch.tv/hlaaluhelseth](https://www.twitch.
 
 ### 🗒️ Registro de cambios
 
+- **[2026-07-28]** Se corrigieron los avatares de Twitch: se eliminó el endpoint no válido `avatars.twitch.tv`, se añadió la resolución por nombre de usuario de la URL actual de la imagen CDN con caché y se mantuvo la prioridad de las URL de avatar proporcionadas por StreamElements. La corrección funciona para todos los participantes sin una lista previa de usuarios.
+- **[2026-07-28]** Se mejoró el filtrado de mensajes: los comandos que empiezan por `!` se detectan incluso después de espacios iniciales; se añadió el campo `hidden_bots` para ocultar todos los mensajes de los bots seleccionados sin distinguir mayúsculas de minúsculas. El filtro se aplica tanto a eventos normales como de prueba de StreamElements. Los valores predeterminados son `Nightbot` y `StreamElements`.
 - **[2026-07-15]** Se añadió soporte para el chat de YouTube: color de nombre estable por autor derivado del ID del autor (YouTube no envía color de nombre), e insignias de emoji sintéticas por rol (propietario/moderador/miembro del canal/verificado) en lugar de los iconos de Twitch. También se corrigió la inestabilidad de las animaciones de entrada de mensajes bajo ráfagas rápidas, y se añadió un modo `expand` funcional para mensajes largos.
 - **[2026-07-15]** Se añadió una capa de fondo para todo el chat (nuevo grupo de campos "Fondo del chat"): URL de imagen, ajuste cover/contain/stretch, opacidad y desenfoque. Se renderiza como una capa independiente detrás de la lista de mensajes; no afecta al fondo existente por mensaje (`message_bg_image`).
 
